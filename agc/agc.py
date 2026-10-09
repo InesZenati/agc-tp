@@ -83,7 +83,19 @@ def read_fasta(amplicon_file: Path, minseqlen: int) -> Iterator[str]:
     :param minseqlen: (int) Minimum amplicon sequence length
     :return: A generator object that provides the Fasta sequences (str).
     """
-    pass
+    with gzip.open(amplicon_file, "rt") as file:
+        sequence = ""
+        for line in file:
+            line = line.strip()
+            if line.startswith(">"):
+                if sequence != "" and len(sequence) >= minseqlen:
+                    yield sequence
+                sequence = ""
+            else:
+                sequence = sequence + line
+        if sequence != "" and len(sequence) >= minseqlen:
+            yield sequence
+ 
 
 
 def dereplication_fulllength(amplicon_file: Path, minseqlen: int, mincount: int) -> Iterator[List]:
@@ -94,7 +106,13 @@ def dereplication_fulllength(amplicon_file: Path, minseqlen: int, mincount: int)
     :param mincount: (int) Minimum amplicon count
     :return: A generator object that provides a (list)[sequences, count] of sequence with a count >= mincount and a length >= minseqlen.
     """
-    pass
+    sequence_counter = Counter()
+    for sequence in read_fasta(amplicon_file, minseqlen):
+        sequence_counter[sequence] += 1
+    for sequence, count in sequence_counter.most_common():
+        if count >= mincount:
+            yield [sequence, count]
+ 
 
 def get_identity(alignment_list: List[str]) -> float:
     """Compute the identity rate between two sequences
@@ -102,7 +120,7 @@ def get_identity(alignment_list: List[str]) -> float:
     :param alignment_list:  (list) A list of aligned sequences in the format ["SE-QUENCE1", "SE-QUENCE2"]
     :return: (float) The rate of identity between the two sequences.
     """
-    pass
+
 
 def abundance_greedy_clustering(amplicon_file: Path, minseqlen: int, mincount: int, chunk_size: int, kmer_size: int) -> List:
     """Compute an abundance greedy clustering regarding sequence count and identity.
