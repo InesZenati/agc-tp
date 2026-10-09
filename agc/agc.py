@@ -185,8 +185,6 @@ def main(): # pragma: no cover
                                            args.mincount, args.chunk_size,
                                            args.kmer_size)
     write_OTU(otu_list, args.output_file)
- 
-
 
 
 if __name__ == '__main__':
